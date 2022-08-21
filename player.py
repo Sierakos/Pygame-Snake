@@ -6,6 +6,7 @@ class Player:
         self.screen = pygame.display.get_surface()
 
         self.player_length = 1
+        self.player_vec = pygame.math.Vector2()
 
         # create player rect
         self.player_rect = pygame.Rect(pos,(TILE_SIZE,TILE_SIZE)).inflate(-2,-2)
@@ -18,10 +19,10 @@ class Player:
 
     def check_game_over(self):
         if self.player_rect.left < 0 or self.player_rect.right > WIDTH or self.player_rect.top < 0 or self.player_rect.bottom > HEIGHT:
-            sys.exit()
+            return True
         for tail in self.player_rects[1::]:
             if self.player_rect.colliderect(tail) and self.eat == False:
-                sys.exit()
+                return True
 
     def add_next_rect(self,pos):
         if self.player_rects[-1]:
@@ -36,10 +37,24 @@ class Player:
         else:
             self.eat = False
 
-    def head_move(self,player_vec):
+    def check_input(self, event):
+        if event == pygame.K_LEFT and self.player_vec.x != 1:
+            self.player_vec.x = -1
+            self.player_vec.y = 0
+        elif event == pygame.K_RIGHT and self.player_vec.x != -1:
+            self.player_vec.x = 1
+            self.player_vec.y = 0
+        elif event == pygame.K_UP and self.player_vec.y != 1:
+            self.player_vec.x = 0
+            self.player_vec.y = -1
+        elif event == pygame.K_DOWN and self.player_vec.y != -1:
+            self.player_vec.x = 0
+            self.player_vec.y = 1
+
+    def head_move(self):
         head = self.player_rects[0]
-        head.x += player_vec[0] * TILE_SIZE
-        head.y += player_vec[1] * TILE_SIZE
+        head.x += self.player_vec[0] * TILE_SIZE
+        head.y += self.player_vec[1] * TILE_SIZE
 
     def tail_move(self):
         i = -2
@@ -49,13 +64,13 @@ class Player:
             i -= 1              
 
 
-    def update(self,player_vec,apple):
+    def update(self,apple):
         # move the tail before head for place first
         # tail rect next to head properly
         self.tail_move()
 
         # move the head
-        self.head_move(player_vec)
+        self.head_move()
         
         # check if snake is eating apple
         self.check_apple_collizion(apple)
@@ -65,6 +80,6 @@ class Player:
             pygame.draw.rect(self.screen,ORANGE,rect)
        
         # check if snake is out of window
-        self.check_game_over()
+        # self.check_game_over()
 
         
